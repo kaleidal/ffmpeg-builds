@@ -8,6 +8,14 @@ set -a
 source "${REPO_DIR}/versions.env"
 set +a
 
+sha256_file() {
+  if command -v sha256sum >/dev/null 2>&1; then
+    sha256sum "$1" | awk '{print $1}'
+  else
+    shasum -a 256 "$1" | awk '{print $1}'
+  fi
+}
+
 download_verified() {
   local url="$1"
   local output="$2"
@@ -15,11 +23,7 @@ download_verified() {
   local actual_sha256
 
   curl --fail --location --retry 4 --retry-all-errors --output "${output}" "${url}"
-  if command -v sha256sum >/dev/null 2>&1; then
-    actual_sha256="$(sha256sum "${output}" | awk '{print $1}')"
-  else
-    actual_sha256="$(shasum -a 256 "${output}" | awk '{print $1}')"
-  fi
+  actual_sha256="$(sha256_file "${output}")"
   if [[ "${actual_sha256}" != "${expected_sha256}" ]]; then
     printf 'Checksum mismatch for %s\nexpected: %s\nactual:   %s\n' \
       "${output}" "${expected_sha256}" "${actual_sha256}" >&2

@@ -37,11 +37,13 @@ Build output is written to `dist/<target>`. The scripts download only sources pi
 The release workflow validates that its Git tag matches the version and revision in `versions.env`:
 
 ```sh
-git tag v8.1.2-raffi.1
-git push origin v8.1.2-raffi.1
+git tag v9.0-raffi.1
+git push origin v9.0-raffi.1
 ```
 
 All platform builds and codec tests must pass before the GitHub release is created.
+
+The update workflow checks FFmpeg's stable source archive daily. When a newer version appears, it commits the new version and checksum, creates build revision 1, and explicitly starts the release workflow at that immutable tag.
 
 ## Updating FFmpeg
 
@@ -52,4 +54,3 @@ Use stable FFmpeg release tags for Raffi. Development snapshots can be tested on
 ## License
 
 The build scripts are MIT licensed. FFmpeg and OpenSSL retain their own licenses, which are included with every artifact. Consumers must comply with those licenses and make the corresponding source available.
-

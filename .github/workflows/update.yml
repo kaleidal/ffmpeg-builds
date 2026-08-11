@@ -1,0 +1,59 @@
+name: Check for FFmpeg updates
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 5 * * *"
+
+concurrency:
+  group: ffmpeg-upstream-update
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  update:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Check stable upstream release
+        id: upstream
+        run: |
+          source versions.env
+          current="${FFMPEG_VERSION}"
+          eval "$(./scripts/find-latest-ffmpeg.sh)"
+          echo "version=${FFMPEG_VERSION}" >> "${GITHUB_OUTPUT}"
+          echo "sha256=${FFMPEG_SOURCE_SHA256}" >> "${GITHUB_OUTPUT}"
+          if [[ "${FFMPEG_VERSION}" != "${current}" ]]; then
+            echo "changed=true" >> "${GITHUB_OUTPUT}"
+          else
+            echo "changed=false" >> "${GITHUB_OUTPUT}"
+          fi
+      - name: Record and tag update
+        if: steps.upstream.outputs.changed == 'true'
+        env:
+          VERSION: ${{ steps.upstream.outputs.version }}
+          SHA256: ${{ steps.upstream.outputs.sha256 }}
+        run: |
+          sed -i \
+            -e "s/^FFMPEG_VERSION=.*/FFMPEG_VERSION=${VERSION}/" \
+            -e "s/^FFMPEG_SOURCE_SHA256=.*/FFMPEG_SOURCE_SHA256=${SHA256}/" \
+            -e "s/^BUILD_REVISION=.*/BUILD_REVISION=1/" \
+            versions.env
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add versions.env
+          git commit -m "Build FFmpeg ${VERSION}"
+          git push origin HEAD:main
+          git tag -a "v${VERSION}-raffi.1" -m "FFmpeg ${VERSION} for Raffi build 1"
+          git push origin "v${VERSION}-raffi.1"
+      - name: Start release build
+        if: steps.upstream.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.upstream.outputs.version }}
+        run: gh workflow run release.yml --ref "v${VERSION}-raffi.1"
