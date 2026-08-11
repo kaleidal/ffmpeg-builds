@@ -104,7 +104,7 @@ jobs:
             artifacts/macos-x64/ffmpeg \
             artifacts/macos-arm64/ffmpeg \
             -output dist/macos-universal/ffmpeg
-          lipo -verify_arch x86_64 arm64 dist/macos-universal/ffmpeg
+          lipo dist/macos-universal/ffmpeg -verify_arch x86_64 arm64
           chmod 0755 dist/macos-universal/ffmpeg
           cp artifacts/macos-arm64/LICENSE.FFMPEG dist/macos-universal/
           cp artifacts/macos-arm64/BUILD-INFO.txt dist/macos-universal/BUILD-INFO.arm64.txt
