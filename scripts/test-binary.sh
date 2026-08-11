@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BINARY="${1:-}"
 if [[ -z "${BINARY}" || ! -x "${BINARY}" ]]; then
   printf 'Usage: %s <ffmpeg-executable>\n' "$0" >&2
@@ -20,10 +21,14 @@ grep -Eq '^[[:space:]]*A.*[[:space:]]aac[[:space:]]' <<< "${ENCODERS}"
 grep -Fxq '  https' <<< "${PROTOCOLS}"
 grep -Eq '^[[:space:]]*E[[:space:]]+mp4[[:space:]]' <<< "${MUXERS}"
 
+TLS_TEST_REVISION="${TLS_TEST_REVISION:-${GITHUB_SHA:-$(git -C "${SCRIPT_DIR}" rev-parse HEAD)}}"
 "${BINARY}" \
   -hide_banner \
   -loglevel error \
-  -i 'https://samples.ffmpeg.org/A-codecs/truespeech/tada.wav' \
+  -f image2pipe \
+  -vcodec pgm \
+  -i "https://raw.githubusercontent.com/kaleidal/ffmpeg-builds/${TLS_TEST_REVISION}/testdata/tls.pgm" \
+  -frames:v 1 \
   -f null \
   -
 
