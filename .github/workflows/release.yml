@@ -170,4 +170,4 @@ jobs:
           gh release create "${GITHUB_REF_NAME}" \
             release/* \
             --title "FFmpeg ${FFMPEG_VERSION} for Raffi" \
-            --notes "Reproducible LGPLv3 FFmpeg ${FFMPEG_VERSION} build revision ${BUILD_REVISION}. Verify downloads with SHA256SUMS and GitHub artifact attestations."
+            --notes "Pinned-source LGPLv3 FFmpeg ${FFMPEG_VERSION} build revision ${BUILD_REVISION}. Verify downloads with SHA256SUMS and GitHub artifact attestations."

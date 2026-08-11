@@ -1,6 +1,6 @@
 # Kaleidal FFmpeg builds
 
-Reproducible, cross-platform FFmpeg executables for Kaleidal desktop applications. The builds are designed for remuxing browser-compatible video while transcoding unsupported audio such as DTS to AAC.
+Pinned-source, cross-platform FFmpeg executables for Kaleidal desktop applications. The builds are designed for remuxing browser-compatible video while transcoding unsupported audio such as DTS to AAC.
 
 The current release targets:
 
