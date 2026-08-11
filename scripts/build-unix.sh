@@ -53,6 +53,7 @@ if [[ "${TARGET}" == "linux-x64" ]]; then
   pushd "${OPENSSL_SOURCE_DIR}" >/dev/null
   ./Configure linux-x86_64 no-apps no-docs no-shared no-tests \
     --prefix="${OPENSSL_PREFIX}" \
+    --openssldir=/etc/ssl \
     --libdir=lib
   make -j"$(nproc)"
   make install_sw

@@ -23,6 +23,13 @@ grep -Eq '^[[:space:]]*E[[:space:]]+mp4[[:space:]]' <<< "${MUXERS}"
 "${BINARY}" \
   -hide_banner \
   -loglevel error \
+  -i 'https://samples.ffmpeg.org/A-codecs/truespeech/tada.wav' \
+  -f null \
+  -
+
+"${BINARY}" \
+  -hide_banner \
+  -loglevel error \
   -f lavfi \
   -i 'sine=frequency=997:sample_rate=48000:duration=1' \
   -strict experimental \
