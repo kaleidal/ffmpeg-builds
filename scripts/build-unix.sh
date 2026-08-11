@@ -66,7 +66,11 @@ if [[ "${TARGET}" == "linux-x64" ]]; then
     --extra-ldflags=-static-libgcc
   )
 else
-  ARCH="${TARGET#macos-}"
+  if [[ "${TARGET}" == "macos-x64" ]]; then
+    ARCH=x86_64
+  else
+    ARCH=arm64
+  fi
   MINIMUM_MACOS_VERSION=11.0
   export MACOSX_DEPLOYMENT_TARGET="${MINIMUM_MACOS_VERSION}"
   PLATFORM_FLAGS=(
