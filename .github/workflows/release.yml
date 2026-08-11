@@ -107,6 +107,7 @@ jobs:
           lipo dist/macos-universal/ffmpeg -verify_arch x86_64 arm64
           chmod 0755 dist/macos-universal/ffmpeg
           cp artifacts/macos-arm64/LICENSE.FFMPEG dist/macos-universal/
+          cp artifacts/macos-arm64/LICENSE.OPUS dist/macos-universal/
           cp artifacts/macos-arm64/BUILD-INFO.txt dist/macos-universal/BUILD-INFO.arm64.txt
           cp artifacts/macos-x64/BUILD-INFO.txt dist/macos-universal/BUILD-INFO.x64.txt
           tar -C dist/macos-universal -czf raffi-ffmpeg-macos-universal.tar.gz .
@@ -157,8 +158,12 @@ jobs:
             "https://github.com/openssl/openssl/releases/download/openssl-${OPENSSL_VERSION}/openssl-${OPENSSL_VERSION}.tar.gz" \
             "release/openssl-${OPENSSL_VERSION}.tar.gz" \
             "${OPENSSL_SOURCE_SHA256}"
+          download_verified \
+            "https://ftp.osuosl.org/pub/xiph/releases/opus/opus-${OPUS_VERSION}.tar.gz" \
+            "release/opus-${OPUS_VERSION}.tar.gz" \
+            "${OPUS_SOURCE_SHA256}"
           cd release
-          sha256sum raffi-ffmpeg-* ffmpeg-* openssl-* > SHA256SUMS
+          sha256sum raffi-ffmpeg-* ffmpeg-* openssl-* opus-* > SHA256SUMS
       - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:
           subject-path: "release/*"

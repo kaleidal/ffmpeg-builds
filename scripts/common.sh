@@ -42,6 +42,8 @@ write_build_info() {
     printf 'ffmpeg_source_sha256=%s\n' "${FFMPEG_SOURCE_SHA256}"
     printf 'openssl_version=%s\n' "${OPENSSL_VERSION}"
     printf 'openssl_source_sha256=%s\n' "${OPENSSL_SOURCE_SHA256}"
+    printf 'opus_version=%s\n' "${OPUS_VERSION}"
+    printf 'opus_source_sha256=%s\n' "${OPUS_SOURCE_SHA256}"
     printf 'build_revision=%s\n' "${BUILD_REVISION}"
     printf 'configure=%s\n' "${configuration}"
   } > "${output_dir}/BUILD-INFO.txt"

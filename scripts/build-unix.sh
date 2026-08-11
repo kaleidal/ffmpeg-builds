@@ -17,6 +17,9 @@ BUILD_DIR="${REPO_DIR}/build/${TARGET}"
 OUTPUT_DIR="${REPO_DIR}/dist/${TARGET}"
 FFMPEG_ARCHIVE="${BUILD_DIR}/ffmpeg-${FFMPEG_VERSION}.tar.xz"
 FFMPEG_SOURCE_DIR="${BUILD_DIR}/ffmpeg-${FFMPEG_VERSION}"
+OPUS_ARCHIVE="${BUILD_DIR}/opus-${OPUS_VERSION}.tar.gz"
+OPUS_SOURCE_DIR="${BUILD_DIR}/opus-${OPUS_VERSION}"
+OPUS_PREFIX="${BUILD_DIR}/opus-install"
 
 rm -rf "${BUILD_DIR}" "${OUTPUT_DIR}"
 mkdir -p "${BUILD_DIR}" "${OUTPUT_DIR}"
@@ -27,6 +30,12 @@ download_verified \
   "${FFMPEG_SOURCE_SHA256}"
 tar -xf "${FFMPEG_ARCHIVE}" -C "${BUILD_DIR}"
 
+download_verified \
+  "https://ftp.osuosl.org/pub/xiph/releases/opus/opus-${OPUS_VERSION}.tar.gz" \
+  "${OPUS_ARCHIVE}" \
+  "${OPUS_SOURCE_SHA256}"
+tar -xf "${OPUS_ARCHIVE}" -C "${BUILD_DIR}"
+
 COMMON_FLAGS=(
   --disable-autodetect
   --disable-debug
@@ -35,7 +44,9 @@ COMMON_FLAGS=(
   --disable-ffprobe
   --disable-gpl
   --disable-nonfree
+  --enable-libopus
   --enable-pic
+  --pkg-config-flags=--static
   --enable-version3
 )
 
@@ -59,7 +70,7 @@ if [[ "${TARGET}" == "linux-x64" ]]; then
   make install_sw
   popd >/dev/null
 
-  export PKG_CONFIG_PATH="${OPENSSL_PREFIX}/lib/pkgconfig"
+  export PKG_CONFIG_PATH="${OPENSSL_PREFIX}/lib/pkgconfig:${OPUS_PREFIX}/lib/pkgconfig"
   PLATFORM_FLAGS=(
     --arch=x86_64
     --enable-openssl
@@ -83,7 +94,21 @@ else
     --extra-cflags="-arch ${ARCH} -mmacosx-version-min=${MINIMUM_MACOS_VERSION}"
     --extra-ldflags="-arch ${ARCH} -mmacosx-version-min=${MINIMUM_MACOS_VERSION}"
   )
+  export CFLAGS="-arch ${ARCH} -mmacosx-version-min=${MINIMUM_MACOS_VERSION}"
+  export LDFLAGS="-arch ${ARCH} -mmacosx-version-min=${MINIMUM_MACOS_VERSION}"
+  export PKG_CONFIG_PATH="${OPUS_PREFIX}/lib/pkgconfig"
 fi
+
+pushd "${OPUS_SOURCE_DIR}" >/dev/null
+./configure \
+  --prefix="${OPUS_PREFIX}" \
+  --disable-doc \
+  --disable-extra-programs \
+  --disable-shared \
+  --enable-static
+make -j"$(getconf _NPROCESSORS_ONLN 2>/dev/null || sysctl -n hw.logicalcpu)"
+make install
+popd >/dev/null
 
 pushd "${FFMPEG_SOURCE_DIR}" >/dev/null
 ./configure "${COMMON_FLAGS[@]}" "${PLATFORM_FLAGS[@]}"
@@ -91,6 +116,7 @@ CONFIGURATION="$(sed -n 's/^FFMPEG_CONFIGURATION=//p' ffbuild/config.mak)"
 make -j"$(getconf _NPROCESSORS_ONLN 2>/dev/null || sysctl -n hw.logicalcpu)" ffmpeg
 cp ffmpeg "${OUTPUT_DIR}/ffmpeg"
 cp COPYING.LGPLv3 "${OUTPUT_DIR}/LICENSE.FFMPEG"
+cp "${OPUS_SOURCE_DIR}/COPYING" "${OUTPUT_DIR}/LICENSE.OPUS"
 popd >/dev/null
 
 if [[ "${TARGET}" == "linux-x64" ]]; then

@@ -18,6 +18,7 @@ MUXERS="$("${BINARY}" -hide_banner -muxers 2>&1)"
 
 grep -Eq '^[[:space:]]*A.*[[:space:]]dca[[:space:]]' <<< "${DECODERS}"
 grep -Eq '^[[:space:]]*A.*[[:space:]]aac[[:space:]]' <<< "${ENCODERS}"
+grep -Eq '^[[:space:]]*A.*[[:space:]]libopus[[:space:]]' <<< "${ENCODERS}"
 grep -Fxq '  https' <<< "${PROTOCOLS}"
 grep -Eq '^[[:space:]]*E[[:space:]]+mp4[[:space:]]' <<< "${MUXERS}"
 
@@ -53,3 +54,17 @@ TLS_TEST_REVISION="${TLS_TEST_REVISION:-${GITHUB_SHA:-$(git -C "${SCRIPT_DIR}" r
 
 DECODE_OUTPUT="$("${BINARY}" -hide_banner -i "${TEST_DIR}/output.mp4" -f null - 2>&1)"
 grep -Eq 'Audio: aac' <<< "${DECODE_OUTPUT}"
+
+"${BINARY}" \
+  -hide_banner \
+  -loglevel error \
+  -f lavfi \
+  -i 'anullsrc=channel_layout=5.1:sample_rate=48000:d=1' \
+  -c:a libopus \
+  -b:a 384k \
+  -movflags frag_keyframe+empty_moov+default_base_moof \
+  -f mp4 \
+  -y "${TEST_DIR}/surround.mp4"
+
+SURROUND_OUTPUT="$("${BINARY}" -hide_banner -i "${TEST_DIR}/surround.mp4" -f null - 2>&1)"
+grep -Eq 'Audio: opus.*5\.1' <<< "${SURROUND_OUTPUT}"

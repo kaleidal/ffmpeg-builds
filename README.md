@@ -1,6 +1,6 @@
 # Kaleidal FFmpeg builds
 
-Pinned-source, cross-platform FFmpeg executables for Kaleidal desktop applications. The builds are designed for remuxing browser-compatible video while transcoding unsupported audio such as DTS to AAC.
+Pinned-source, cross-platform FFmpeg executables for Kaleidal desktop applications. The builds are designed for remuxing browser-compatible video while transcoding unsupported audio such as DTS to browser-safe multichannel Opus.
 
 The current release targets:
 
@@ -12,7 +12,7 @@ The current release targets:
 
 Every archive contains the FFmpeg executable, its exact build configuration, FFmpeg and dependency licenses, and source provenance. Releases also include SHA-256 checksums and GitHub build-provenance attestations.
 
-The build deliberately excludes GPL and nonfree options. FFmpeg is configured as LGPLv3, using its native DTS decoder and AAC encoder. Linux HTTPS support is statically linked against the pinned OpenSSL LTS release; Windows and macOS use their platform TLS implementations.
+The build deliberately excludes GPL and nonfree options. FFmpeg is configured as LGPLv3, using its native DTS decoder and pinned libopus encoder. Linux HTTPS support is statically linked against the pinned OpenSSL LTS release; Windows and macOS use their platform TLS implementations.
 
 ## Building locally
 
@@ -66,4 +66,4 @@ Pushing the tag starts the release workflow. It validates the tag against `versi
 
 ## License
 
-The build scripts are MIT licensed. FFmpeg and OpenSSL retain their own licenses, which are included with every artifact. Consumers must comply with those licenses and make the corresponding source available.
+The build scripts are MIT licensed. FFmpeg, OpenSSL, and libopus retain their own licenses, which are included with every relevant artifact. Consumers must comply with those licenses and make the corresponding source available.
