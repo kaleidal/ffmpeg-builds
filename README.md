@@ -32,24 +32,37 @@ Windows builds run from an MSYS2 MinGW x64 shell:
 
 Build output is written to `dist/<target>`. The scripts download only sources pinned in `versions.env` and reject mismatched checksums.
 
-## Publishing
+## Automatic FFmpeg updates
 
-The release workflow validates that its Git tag matches the version and revision in `versions.env`:
+GitHub Actions checks FFmpeg's official stable release directory every day at 05:17 UTC. The same check can be started from the Actions page with the **Run workflow** button.
+
+When a newer stable version is available, the updater:
+
+1. Records the version and verified source checksum in `versions.env`.
+2. Resets `BUILD_REVISION` to `1`.
+3. Commits the pin to `main`.
+4. Creates and pushes an immutable `v<version>-raffi.1` tag.
+5. Builds and tests Linux, Windows, macOS x64, and macOS arm64.
+6. Packages the universal macOS binary and publishes the release only after every build and codec test passes.
+
+The release contains checksummed source archives, platform binaries, licenses, build metadata, and GitHub build-provenance attestations. Development snapshots are not selected by the updater.
+
+## Updating consumers
+
+Applications intentionally do not download an unreviewed release just because it is new. After a release succeeds, update the release tag and platform archive checksums in the application's FFmpeg manifest. Raffi stores these pins in `apps/desktop/ffmpeg.json`; its `prepare:ffmpeg` command downloads and verifies the selected artifact, and desktop packaging runs that command automatically.
+
+## Publishing build changes
+
+When build flags or a pinned dependency change without a new FFmpeg release, update their values and checksums in `versions.env`, increment `BUILD_REVISION`, and run at least one local build. Commit and push the change before creating the matching tag:
 
 ```sh
-git tag v9.0-raffi.1
-git push origin v9.0-raffi.1
+source versions.env
+tag="v${FFMPEG_VERSION}-raffi.${BUILD_REVISION}"
+git tag -a "${tag}" -m "FFmpeg ${FFMPEG_VERSION} for Raffi build ${BUILD_REVISION}"
+git push origin main "${tag}"
 ```
 
-All platform builds and codec tests must pass before the GitHub release is created.
-
-The update workflow checks FFmpeg's stable source archive daily. When a newer version appears, it commits the new version and checksum, creates build revision 1, and explicitly starts the release workflow at that immutable tag.
-
-## Updating FFmpeg
-
-Update the versions and source checksums in `versions.env`, run at least one local build, then increment `BUILD_REVISION` only when the build configuration changes without changing the FFmpeg version. Release tags are immutable.
-
-Use stable FFmpeg release tags for Raffi. Development snapshots can be tested on branches but should not replace a pinned application dependency.
+Pushing the tag starts the release workflow. It validates the tag against `versions.env`, and all platform builds and codec tests must pass before the GitHub release is created. Release tags are immutable.
 
 ## License
 
