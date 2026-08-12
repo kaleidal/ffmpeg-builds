@@ -42,8 +42,9 @@ When a newer stable version is available, the updater:
 2. Resets `BUILD_REVISION` to `1`.
 3. Commits the pin to `main`.
 4. Creates and pushes an immutable `v<version>-raffi.1` tag.
-5. Builds and tests Linux, Windows, macOS x64, and macOS arm64.
-6. Packages the universal macOS binary and publishes the release only after every build and codec test passes.
+5. Explicitly starts the release workflow at that tag and verifies the run was created.
+6. Builds and tests Linux, Windows, macOS x64, and macOS arm64.
+7. Packages the universal macOS binary and publishes the release only after every build and codec test passes.
 
 The release contains checksummed source archives, platform binaries, licenses, build metadata, and GitHub build-provenance attestations. Development snapshots are not selected by the updater.
 

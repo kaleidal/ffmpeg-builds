@@ -10,6 +10,7 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
+  actions: write
   contents: write
 
 jobs:
@@ -35,6 +36,7 @@ jobs:
       - name: Record and tag update
         if: steps.upstream.outputs.changed == 'true'
         env:
+          GH_TOKEN: ${{ github.token }}
           VERSION: ${{ steps.upstream.outputs.version }}
           SHA256: ${{ steps.upstream.outputs.sha256 }}
         run: |
@@ -48,5 +50,24 @@ jobs:
           git add versions.env
           git commit -m "Build FFmpeg ${VERSION}"
           git push origin HEAD:main
-          git tag -a "v${VERSION}-raffi.1" -m "FFmpeg ${VERSION} for Raffi build 1"
-          git push origin "v${VERSION}-raffi.1"
+          tag="v${VERSION}-raffi.1"
+          git tag -a "${tag}" -m "FFmpeg ${VERSION} for Raffi build 1"
+          git push origin "${tag}"
+
+          gh workflow run release.yml --ref "${tag}"
+          for attempt in {1..10}; do
+            run_url="$(gh run list \
+              --workflow release.yml \
+              --branch "${tag}" \
+              --event workflow_dispatch \
+              --limit 1 \
+              --json url \
+              --jq '.[0].url // empty')"
+            if [[ -n "${run_url}" ]]; then
+              echo "Started ${run_url}"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "The release workflow was not created for ${tag}" >&2
+          exit 1
