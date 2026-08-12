@@ -59,9 +59,11 @@ grep -Eq 'Audio: aac' <<< "${DECODE_OUTPUT}"
   -hide_banner \
   -loglevel error \
   -f lavfi \
-  -i 'anullsrc=channel_layout=5.1:sample_rate=48000:d=1' \
+  -i 'anullsrc=channel_layout=5.1(side):sample_rate=48000:d=1' \
   -c:a libopus \
   -b:a 384k \
+  -af 'aformat=channel_layouts=5.1' \
+  -mapping_family 1 \
   -movflags frag_keyframe+empty_moov+default_base_moof \
   -f mp4 \
   -y "${TEST_DIR}/surround.mp4"
