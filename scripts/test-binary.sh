@@ -37,7 +37,7 @@ TLS_TEST_REVISION="${TLS_TEST_REVISION:-${GITHUB_SHA:-$(git -C "${SCRIPT_DIR}" r
   -hide_banner \
   -loglevel error \
   -f lavfi \
-  -i 'sine=frequency=997:sample_rate=48000:duration=1' \
+  -i 'anullsrc=channel_layout=5.1(side):sample_rate=48000:d=1' \
   -strict experimental \
   -c:a dca \
   -y "${TEST_DIR}/source.dts"
@@ -58,8 +58,7 @@ grep -Eq 'Audio: aac' <<< "${DECODE_OUTPUT}"
 "${BINARY}" \
   -hide_banner \
   -loglevel error \
-  -f lavfi \
-  -i 'anullsrc=channel_layout=5.1(side):sample_rate=48000:d=1' \
+  -i "${TEST_DIR}/source.dts" \
   -c:a libopus \
   -b:a 384k \
   -af 'aformat=channel_layouts=5.1' \
