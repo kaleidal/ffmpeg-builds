@@ -37,6 +37,7 @@ TLS_TEST_REVISION="${TLS_TEST_REVISION:-${GITHUB_SHA:-$(git -C "${SCRIPT_DIR}" r
   -vcodec pgm \
   -i "https://raw.githubusercontent.com/kaleidal/ffmpeg-builds/${TLS_TEST_REVISION}/testdata/tls.pgm" \
   -frames:v 1 \
+  -c:v copy \
   -f null \
   -
 
