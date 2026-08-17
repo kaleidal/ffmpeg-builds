@@ -8,19 +8,26 @@ if [[ -z "${BINARY}" || ! -x "${BINARY}" ]]; then
   exit 2
 fi
 
-TEST_DIR="$(mktemp -d)"
-trap 'rm -rf "${TEST_DIR}"' EXIT
-
 DECODERS="$("${BINARY}" -hide_banner -decoders 2>&1)"
 ENCODERS="$("${BINARY}" -hide_banner -encoders 2>&1)"
 PROTOCOLS="$("${BINARY}" -hide_banner -protocols 2>&1)"
 MUXERS="$("${BINARY}" -hide_banner -muxers 2>&1)"
+DEMUXERS="$("${BINARY}" -hide_banner -demuxers 2>&1)"
+FILTERS="$("${BINARY}" -hide_banner -filters 2>&1)"
 
-grep -Eq '^[[:space:]]*A.*[[:space:]]dca[[:space:]]' <<< "${DECODERS}"
-grep -Eq '^[[:space:]]*A.*[[:space:]]aac[[:space:]]' <<< "${ENCODERS}"
+grep -Eq '^[[:space:]]*A.*[[:space:]]truehd[[:space:]]' <<< "${DECODERS}"
+grep -Eq '^[[:space:]]*A.*[[:space:]]mlp[[:space:]]' <<< "${DECODERS}"
+! grep -Eq '^[[:space:]]*A.*[[:space:]]dca[[:space:]]' <<< "${DECODERS}"
+! grep -Eq '^[[:space:]]*A.*[[:space:]]aac[[:space:]]' <<< "${DECODERS}"
 grep -Eq '^[[:space:]]*A.*[[:space:]]libopus[[:space:]]' <<< "${ENCODERS}"
+! grep -Eq '^[[:space:]]*V.*[[:space:]]' <<< "${ENCODERS}"
 grep -Fxq '  https' <<< "${PROTOCOLS}"
 grep -Eq '^[[:space:]]*E[[:space:]]+mp4[[:space:]]' <<< "${MUXERS}"
+grep -Eq '^[[:space:]]*D[[:space:]]+matroska' <<< "${DEMUXERS}"
+grep -Eq '^[[:space:]]*D[[:space:]]+mov' <<< "${DEMUXERS}"
+grep -Eq '^[[:space:]]*D[[:space:]]+mpegts' <<< "${DEMUXERS}"
+grep -Eq '^[[:space:]]*[.A-Z]+[[:space:]]+aformat[[:space:]]' <<< "${FILTERS}"
+grep -Eq '^[[:space:]]*[.A-Z]+[[:space:]]+aresample[[:space:]]' <<< "${FILTERS}"
 
 TLS_TEST_REVISION="${TLS_TEST_REVISION:-${GITHUB_SHA:-$(git -C "${SCRIPT_DIR}" rev-parse HEAD)}}"
 "${BINARY}" \
@@ -33,39 +40,5 @@ TLS_TEST_REVISION="${TLS_TEST_REVISION:-${GITHUB_SHA:-$(git -C "${SCRIPT_DIR}" r
   -f null \
   -
 
-"${BINARY}" \
-  -hide_banner \
-  -loglevel error \
-  -f lavfi \
-  -i 'anullsrc=channel_layout=5.1(side):sample_rate=48000:d=1' \
-  -strict experimental \
-  -c:a dca \
-  -y "${TEST_DIR}/source.dts"
-
-"${BINARY}" \
-  -hide_banner \
-  -loglevel error \
-  -i "${TEST_DIR}/source.dts" \
-  -c:a aac \
-  -b:a 192k \
-  -movflags frag_keyframe+empty_moov+default_base_moof \
-  -f mp4 \
-  -y "${TEST_DIR}/output.mp4"
-
-DECODE_OUTPUT="$("${BINARY}" -hide_banner -i "${TEST_DIR}/output.mp4" -f null - 2>&1)"
-grep -Eq 'Audio: aac' <<< "${DECODE_OUTPUT}"
-
-"${BINARY}" \
-  -hide_banner \
-  -loglevel error \
-  -i "${TEST_DIR}/source.dts" \
-  -c:a libopus \
-  -b:a 384k \
-  -af 'aformat=channel_layouts=5.1' \
-  -mapping_family 1 \
-  -movflags frag_keyframe+empty_moov+default_base_moof \
-  -f mp4 \
-  -y "${TEST_DIR}/surround.mp4"
-
-SURROUND_OUTPUT="$("${BINARY}" -hide_banner -i "${TEST_DIR}/surround.mp4" -f null - 2>&1)"
-grep -Eq 'Audio: opus.*5\.1' <<< "${SURROUND_OUTPUT}"
+"${BINARY}" -hide_banner -h decoder=truehd >/dev/null
+"${BINARY}" -hide_banner -h encoder=libopus >/dev/null

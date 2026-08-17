@@ -3,6 +3,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/common.sh"
+source "${SCRIPT_DIR}/ffmpeg-flags.sh"
 
 TARGET=windows-x64
 BUILD_DIR="${REPO_DIR}/build/${TARGET}"
@@ -57,7 +58,8 @@ pushd "${FFMPEG_SOURCE_DIR}" >/dev/null
   --pkg-config-flags=--static \
   --enable-schannel \
   --enable-version3 \
-  --extra-ldflags=-static
+  --extra-ldflags=-static \
+  "${RAFFI_FFMPEG_FLAGS[@]}"
 CONFIGURATION="$(sed -n 's/^FFMPEG_CONFIGURATION=//p' ffbuild/config.mak)"
 make -j"$(nproc)" ffmpeg.exe
 cp ffmpeg.exe "${OUTPUT_DIR}/ffmpeg.exe"

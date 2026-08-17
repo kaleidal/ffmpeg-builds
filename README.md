@@ -1,6 +1,6 @@
 # Kaleidal FFmpeg builds
 
-Pinned-source, cross-platform FFmpeg executables for Kaleidal desktop applications. The builds are designed for remuxing browser-compatible video while transcoding unsupported audio such as DTS to browser-safe multichannel Opus.
+Pinned-source, cross-platform FFmpeg executables for Kaleidal desktop applications. The builds copy browser-compatible video while transcoding only audio formats that Raffi cannot decode through MediaBunny, such as TrueHD/MLP, to browser-safe multichannel Opus.
 
 The current release targets:
 
@@ -12,7 +12,7 @@ The current release targets:
 
 Every archive contains the FFmpeg executable, its exact build configuration, FFmpeg and dependency licenses, and source provenance. Releases also include SHA-256 checksums and GitHub build-provenance attestations.
 
-The build deliberately excludes GPL and nonfree options. FFmpeg is configured as LGPLv3, using its native DTS decoder and pinned libopus encoder. Linux HTTPS support is statically linked against the pinned OpenSSL LTS release; Windows and macOS use their platform TLS implementations.
+The build deliberately excludes GPL and nonfree options. Its component allowlist contains only Raffi's input containers and network protocols, unsupported-audio fallback decoders, fragmented MP4 output, and the pinned libopus encoder. Video is always copied rather than decoded or encoded. Linux HTTPS support is statically linked against the pinned OpenSSL LTS release; Windows and macOS use their platform TLS implementations.
 
 ## Building locally
 

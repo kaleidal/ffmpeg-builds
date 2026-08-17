@@ -3,6 +3,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/common.sh"
+source "${SCRIPT_DIR}/ffmpeg-flags.sh"
 
 TARGET="${1:-}"
 case "${TARGET}" in
@@ -48,6 +49,7 @@ COMMON_FLAGS=(
   --enable-pic
   --pkg-config-flags=--static
   --enable-version3
+  "${RAFFI_FFMPEG_FLAGS[@]}"
 )
 
 if [[ "${TARGET}" == "linux-x64" ]]; then
@@ -88,9 +90,7 @@ else
   PLATFORM_FLAGS=(
     --arch="${ARCH}"
     --cc="clang -arch ${ARCH}"
-    --enable-audiotoolbox
     --enable-securetransport
-    --enable-videotoolbox
     --extra-cflags="-arch ${ARCH} -mmacosx-version-min=${MINIMUM_MACOS_VERSION}"
     --extra-ldflags="-arch ${ARCH} -mmacosx-version-min=${MINIMUM_MACOS_VERSION}"
   )
